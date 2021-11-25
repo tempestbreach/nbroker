@@ -17,9 +17,10 @@ type Broker struct {
     ListenSubject           string
 }
 
-func NewBroker(h Handler, ls string) *Broker {
+func NewBroker(h Handler, c *nats.Conn, ls string) *Broker {
     b := &Broker{
         handler: h,
+        conn: c,
         ListenSubject: ls,
     }
     return b
