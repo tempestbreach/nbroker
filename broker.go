@@ -1,27 +1,45 @@
 package nbroker
 
+// MAKE "UPSTREAM" AND "DOWNSTREAM" BROKERS? Or Routers?
+
 import(
     "log"
 
+    "github.com/tempestbreach/augnats"
     "github.com/nats-io/nats.go"
 )
 
-type Handler interface {
-    HandleMsg(msg *nats.Msg)
+type BrokerConfig struct {
+    Handler                 augnats.Handler
+    Conn                    *nats.Conn
+    EncConn                 *nats.EncodedConn
+    // Maybe omit next
+    ListenSubject           string
 }
 
 type Broker struct {
-    handler                 Handler
+    handler                 augnats.Handler
     conn                    *nats.Conn
+    eConn                   *nats.EncodedConn
     SelfSubject             string
     ListenSubject           string
 }
 
-func NewBroker(h Handler, c *nats.Conn, ls string) *Broker {
+// type Broker struct {
+//     downstreamHandler           augnats.Handler
+//     upstreamHandler             augnats.Handler
+//     conn                        *nats.Conn
+//     eConn                       *nats.EncodedConn
+//     ListenSubject               string
+// }
+
+func NewBroker(bc BrokerConfig) *Broker {
+
     b := &Broker{
-        handler: h,
-        conn: c,
-        ListenSubject: ls,
+        handler: bc.Handler,
+        conn: bc.Conn,
+        eConn: bc.EncConn,
+        ListenSubject: bc.ListenSubject,
     }
     return b
 }
@@ -37,6 +55,9 @@ func(b *Broker) ListenAndPublish() {
     for {
         msg := <-chanRecv
         b.handler.HandleMsg(msg)
+
+        // msg :=
+
     }
 
     sub.Unsubscribe()
